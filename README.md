@@ -88,7 +88,7 @@ After the parameters are loaded, navigate to the Simulations/ folder.
 Open the Simulink model simulacionrobusto.slx by typing the following command in the MATLAB Command Window:
  ```
 matlab
-open('simulacionrobusto.slx')
+open('Robustcontrolsimulation.slx')
  ```
 3. Run the Simulation
 Once the model is open, click the "Run" button at the top of the Simulink interface to start the simulation.
