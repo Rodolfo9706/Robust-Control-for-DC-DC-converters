@@ -61,26 +61,3 @@ kl =  1;
 
 
 
-%Desired value
-x2d     = - 7;
-x2d_dot =    0;
-
-%Control parameters
-k1 = 10000;%1900;%850; %899;
-k2 = 280;%19;%100;%100;
-
-
-%k1 = 1470;%1900;%850; %899;
-%k2 = 800;%19;%100;%100;
-
-
-%Adaptive terms
-am = 1;
-
-
-
-bm = 1;
-Qaster = bm;
-kapam = 10;
-lambda = 5;
-
