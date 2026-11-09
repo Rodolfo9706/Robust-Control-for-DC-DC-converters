@@ -15,7 +15,7 @@ The controller regulates the output voltage of second-order bilinear converters 
 
 - **Bilinear control allocation:** a virtual inductor-current target computed from the *nominal* duty ratio, so the target does not depend on the control input.
 - **Command filter:** supplies the current reference and its derivative in closed form — no numerical differentiation of measured signals.
-- **Terminal-type current loop** with a **two-sided saturation** that keeps the duty ratio inside $[0, M)$, $M<1$.
+- **Terminal-type current loop** with a **two-sided saturation** that keeps the duty ratio inside $`[0, M)`$, $`M<1`$.
 
 A Lyapunov analysis gives two explicit design conditions under which the loop leaves saturation in finite time, the current error converges in finite time (known source voltage), and the voltage error is uniformly ultimately bounded.
 
@@ -23,7 +23,7 @@ A Lyapunov analysis gives two explicit design conditions under which the loop le
 
 | Study | Result |
 |---|---|
-| Simulation (large setpoint steps + simultaneous $E, L, C, R$ variations) | Only controller among SMC-LESO, AMPC and IDA-PBC that kept regulation at all 5 setpoints |
+| Simulation (large setpoint steps + simultaneous $`E, L, C, R`$ variations) | Only controller among SMC-LESO, AMPC and IDA-PBC that kept regulation at all 5 setpoints |
 | SIL (PSpice switched model + Simulink) | Lowest MSE, IAE, ITAE, ITSE vs. I/O linearization, FO-PI and nonlinear PI |
 | Hardware (DSP prototype) | ~3× faster settling than SMC-LESO; faster load-disturbance recovery |
 | Computation | < 4 µs per cycle on the 200 MHz C2000 (< 10% of the 40 µs control window) |
@@ -32,19 +32,30 @@ A Lyapunov analysis gives two explicit design conditions under which the loop le
 
 ## Control law (inverting buck–boost)
 
-With $e_1 = i_L - i_L^d$, $e_2 = v_o - v_o^d$, $\phi(e)=|e|^{1/2}\operatorname{sgn}(e)$ and nominal duty ratio $\bar u^\star = \dfrac{v_o^d}{v_o^d - E}$:
+With the errors $`e_1 = i_L - i_L^d`$ and $`e_2 = v_o - v_o^d`$, the function $`\phi(e) = |e|^{1/2}\mathrm{sgn}(e)`$, and the nominal duty ratio
 
-$$
-K_\epsilon(e_2) = \frac{k_2\, e_2}{(e_2^2+\epsilon^2)^{1/4}}, \qquad
-\alpha(e_2) = \frac{C}{1-\bar u^\star}\left[K_\epsilon(e_2) - \frac{e_2+v_o^d}{RC}\right]
-$$
+```math
+\bar{u}^{\star} = \frac{v_o^d}{v_o^d - E},
+```
 
-$$
-\tau\,\dot i_L^d = \alpha(e_2) - i_L^d, \qquad
-u = \sigma\!\left(1 + \frac{L\,k_1\phi(e_1) + E - L\,\dot i_L^d}{v_o - E}\right)
-$$
+the virtual current target and its command filter are
 
-where $\sigma(\cdot)$ is a hard lower limit at 0 and a smooth (`tanh`) upper limit below $M$. All parameters are **nominal** values; see Section 3 of the paper for the general class and the design conditions.
+```math
+K_{\epsilon}(e_2) = \frac{k_2 e_2}{(e_2^2 + \epsilon^2)^{1/4}}, \qquad
+\alpha(e_2) = \frac{C}{1 - \bar{u}^{\star}} \left[ K_{\epsilon}(e_2) - \frac{e_2 + v_o^d}{RC} \right],
+```
+
+```math
+\tau \dot{i}_L^d = \alpha(e_2) - i_L^d,
+```
+
+and the duty ratio is
+
+```math
+u = \sigma \left( 1 + \frac{L k_1 \phi(e_1) + E - L \dot{i}_L^d}{v_o - E} \right),
+```
+
+where $`\sigma(\cdot)`$ is a hard lower limit at 0 and a smooth (`tanh`) upper limit below $`M`$. All parameters are **nominal** values; see Section 3 of the paper for the general class and the design conditions.
 
 ---
 
@@ -118,8 +129,8 @@ Results appear in the scopes of the model.
 
 | Parameter | Value | Parameter | Value |
 |---|---|---|---|
-| Source $E$ | 5 V | Inductance $L$ | 2.1 mH |
-| Capacitance $C$ | 2200 µF | Load $R$ | 23 Ω |
+| Source $`E`$ | 5 V | Inductance $`L`$ | 2.1 mH |
+| Capacitance $`C`$ | 2200 µF | Load $`R`$ | 23 Ω |
 | PWM frequency | 25 kHz | Gate signal | 5 V |
 | Diode | NFN306 | MOSFET | IRL744N |
 | Current sensor | ACS712T | Controller | LaunchXL-F28379D |
@@ -128,13 +139,13 @@ The MOSFET is driven through an optocoupler stage; output voltage is measured wi
 
 ### Gains used
 
-| Study | $k_1$ | $k_2$ | $\epsilon$ | $\tau$ | $\ell$ | $M$ |
+| Study | $`k_1`$ | $`k_2`$ | $`\epsilon`$ | $`\tau`$ | $`\ell`$ | $`M`$ |
 |---|---|---|---|---|---|---|
 | Simulation | 300 | 120 | 9 | 0.1 ms | 0.95 | 0.98 |
 | SIL | 130 | 35 | 0.25 | 0.5 ms | 0.95 | 0.98 |
 | Hardware | 1120 | 80 | 2.25 | 0.1 ms | 0.95 | 0.98 |
 
-**Tuning tip:** start from Remark 1 of the paper — choose $k_1 \ge \sqrt{2\delta / t_1^\star}$ for a desired current-loop settling time $t_1^\star$, then keep $k_2/\sqrt{\epsilon}$ below the small-gain bound. Refine in SIL before moving to hardware.
+**Tuning tip:** start from Remark 1 of the paper — choose $`k_1 \ge \sqrt{2\delta / t_1^\star}`$ for a desired current-loop settling time $`t_1^\star`$, then keep $`k_2/\sqrt{\epsilon}`$ below the small-gain bound. Refine in SIL before moving to hardware.
 
 ---
 
