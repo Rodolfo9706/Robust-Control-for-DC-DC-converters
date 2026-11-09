@@ -1,63 +1,78 @@
+%% =====================================================================
+%  SITLparameters.m
+%  Parameters for the software-in-the-loop (SIL) simulations of the
+%  inverting buck-boost converter and the controllers compared in the paper.
+%
+%  Run this script before opening the Simulink model.
+%  Units: SI (V, F, Ohm, H, A).
+%  ======================================================================
 
-%system parameters
-E  = 12;
-C  = 1200*10^-6  ;
-R  = 25 ;
-L  = 1*10^-3 ;
-vd = -5;
+%% ---------------------------------------------------------------------
+%  Converter parameters (active configuration)
+%  ---------------------------------------------------------------------
+E  = 12;            % Source voltage [V]
+C  = 1200*10^-6;    % Output capacitance [F]
+R  = 25;            % Nominal load resistance [Ohm]
+L  = 1*10^-3;       % Inductance [H]
+vd = -5;            % Output-voltage reference [V] (negative: inverting converter)
 
-
+%  Alternative configuration (kept for reference)
 %{
-E  = 12;
-C  = 2610*10^-6    ;%470*10^-6  ;%220*10^-6
-R  = 25 ; %10
-L  = 2010*10^-6 ;
-vd = -8;
+E  = 12;            % Source voltage [V]
+C  = 2610*10^-6;    % Output capacitance [F]   (other values tested: 470e-6, 220e-6)
+R  = 25;            % Load resistance [Ohm]    (other value tested: 10)
+L  = 2010*10^-6;    % Inductance [H]
+vd = -8;            % Output-voltage reference [V]
 %}
 
-L1 = 0.91;
-M = 1;
-% Robust control smulacion
+%% ---------------------------------------------------------------------
+%  Duty-ratio saturation (proposed controller)
+%  ---------------------------------------------------------------------
+L1 = 0.91;          % Start of the smooth upper saturation (ell in the paper)
+M  = 1;             % Upper bound of the duty ratio
 
-%kr1 = 100 ;
+%% ---------------------------------------------------------------------
+%  Proposed robust controller - gains
+%  ---------------------------------------------------------------------
+%  Averaged-model simulation
+%kr1 = 100;
 %kr2 = 50;
 
-% Robust control SITL
- 
-%kr1 = 10000; %1200;%900;
-%kr2 = 980;%350;800;
-%-- 11/10/2023 01:49 p. m. --%
+%  SIL tuning - 11/10/2023
+%kr1 = 10000;       % other values tested: 1200, 900
+%kr2 = 980;         % other values tested: 350, 800
 
-% Robust control SITL
- 
-%kr1 = 3000; %1200;%900;
-%kr2 = 10;%350;800;
-%-- 11/10/2024 01:49 p. m. --%
+%  SIL tuning - 11/10/2024
+%kr1 = 3000;        % other values tested: 1200, 900
+%kr2 = 10;          % other values tested: 350, 800
 
-kr1 = 0; %1200;%900;
-kr2 = 0;%350;800;
+%  Active values
+kr1 = 0;            % Current-loop gain k1    (other values tested: 1200, 900)
+kr2 = 0;            % Voltage-loop gain k2    (other values tested: 350, 800)
 
-% PI non linear control parameters
-delta1 = 0.022; %1;
-delta2 = 0.012;%0.012;
-kp = 0.0019;
-id = vd*((vd - E)/(R*E));
+%% ---------------------------------------------------------------------
+%  Nonlinear PI-type controller
+%  ---------------------------------------------------------------------
+delta1 = 0.022;     % Delta_1                 (other value tested: 1)
+delta2 = 0.012;     % Delta_2
+kp     = 0.0019;    % Proportional gain
+id     = vd*((vd - E)/(R*E));   % Equilibrium inductor current [A]
 
-%Fractional control PI parameter
-kp1 = 0.0019 ;
-k1 = 0.022 ;
+%% ---------------------------------------------------------------------
+%  Fractional-order PI controller
+%  ---------------------------------------------------------------------
+kp1 = 0.0019;       % Proportional gain
+k1  = 0.022;        % Integral gain
 
-%PI sliding mode controller
-kp2 = 0.1 ;
-k2 = 10 ;
+%% ---------------------------------------------------------------------
+%  PI sliding-mode controller
+%  ---------------------------------------------------------------------
+kp2 = 0.1;          % Proportional gain
+k2  = 10;           % Integral gain
 
-% Input - output linearization method based controller
-
-kp3 = 0.1 ;
-k3 = 10 ;
-kl =  1;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
+%% ---------------------------------------------------------------------
+%  Input-output linearization controller
+%  ---------------------------------------------------------------------
+kp3 = 0.1;          % Proportional gain of the current reference
+k3  = 10;           % Integral gain of the current reference
+kl  = 1;            % Current-loop gain
