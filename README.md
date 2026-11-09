@@ -1,105 +1,173 @@
-# Nonlinear Robust Control for Inverting Buck-Boost Converters: Design, Stability, and Practical Implementation
+# Robust Nonlinear Control for Bilinear DC–DC Converters
 
-This paper presents the design and practical implementation of a nonlinear robust control strategy for a DC-DC inverting buck-boost converter, leveraging Lyapunov stability
-theory to guarantee almost global finite-time stability. The proposed controller effectively mitigates external disturbances, such as noise and voltage fluctuations, ensuring precise regulation of the output voltage. A pulse-width modulation (PWM) scheme is employed to interface the control signal with the actuator. The controller’s performance was validated through software-in-the-loop simulations and experimental tests on a low-cost prototype using the LaunchXL-F28379D DSP. Comparisons with state-of-the-art controllers, including nonlinear approaches, highlight significant improvements in disturbance rejection and stability, achieved with reduced complexity and tuning requirements. The results demonstrate the robustness and efficiency of the proposed control strategy, offering a practical and scalable solution for real-world applications. 
+Simulation, software-in-the-loop (SIL), and hardware files for a robust nonlinear voltage regulator for a class of bilinear second-order DC–DC converters, validated on an **inverting buck–boost converter** running on a **TI LaunchXL-F28379D** (C2000) DSP.
 
-![image](https://github.com/user-attachments/assets/ac972548-d740-4d3e-804b-bcf11292a359)
+> **Paper:** R. Verdín and G. Flores, *"Robust Nonlinear Control for a General Class of Bilinear DC–DC Converters: Design, Stability, and Experimental Validation,"* submitted to *Control Engineering Practice*.
+> A preliminary version appeared at the **2025 American Control Conference (ACC)** — see [Citation](#citation).
 
-
-## **Installation and Usage Guide**
-
-### 1. **Clone the Repository**  
-First, clone the repository to your local machine:  
-```bash
-git clone https://github.com/Rodolfo9706/Buck-boost-controllers.git
-cd Buck-boost-controllers 
-```
-
-### 2. **Running the Code on the C2000 Launchpad DSP**
-
-To execute the control implementation on the C2000 Launchpad DSP, follow these steps:
+![Inverting buck–boost converter and control architecture](https://github.com/user-attachments/assets/ac972548-d740-4d3e-804b-bcf11292a359)
 
 ---
 
-### **. Load System Parameters**
+## Overview
 
-- Open MATLAB and navigate to the folder containing the repository.
-- Run the **`DSPbbparameters_ROB.m`** file to initialize the parameters for the control system. This file sets up the required variables for the DSP program.
+The controller regulates the output voltage of second-order bilinear converters (buck, boost, inverting and non-inverting buck–boost) under bounded disturbances and source-voltage uncertainty, **without disturbance observers** and with few tuning gains. It combines:
 
+- **Bilinear control allocation:** a virtual inductor-current target computed from the *nominal* duty ratio, so the target does not depend on the control input.
+- **Command filter:** supplies the current reference and its derivative in closed form — no numerical differentiation of measured signals.
+- **Terminal-type current loop** with a **two-sided saturation** that keeps the duty ratio inside $[0, M)$, $M<1$.
+
+A Lyapunov analysis gives two explicit design conditions under which the loop leaves saturation in finite time, the current error converges in finite time (known source voltage), and the voltage error is uniformly ultimately bounded.
+
+### Highlights
+
+| Study | Result |
+|---|---|
+| Simulation (large setpoint steps + simultaneous $E, L, C, R$ variations) | Only controller among SMC-LESO, AMPC and IDA-PBC that kept regulation at all 5 setpoints |
+| SIL (PSpice switched model + Simulink) | Lowest MSE, IAE, ITAE, ITSE vs. I/O linearization, FO-PI and nonlinear PI |
+| Hardware (DSP prototype) | ~3× faster settling than SMC-LESO; faster load-disturbance recovery |
+| Computation | < 4 µs per cycle on the 200 MHz C2000 (< 10% of the 40 µs control window) |
+
+---
+
+## Control law (inverting buck–boost)
+
+With $e_1 = i_L - i_L^d$, $e_2 = v_o - v_o^d$, $\phi(e)=|e|^{1/2}\operatorname{sgn}(e)$ and nominal duty ratio $\bar u^\star = \dfrac{v_o^d}{v_o^d - E}$:
+
+$$
+K_\epsilon(e_2) = \frac{k_2\, e_2}{(e_2^2+\epsilon^2)^{1/4}}, \qquad
+\alpha(e_2) = \frac{C}{1-\bar u^\star}\left[K_\epsilon(e_2) - \frac{e_2+v_o^d}{RC}\right]
+$$
+
+$$
+\tau\,\dot i_L^d = \alpha(e_2) - i_L^d, \qquad
+u = \sigma\!\left(1 + \frac{L\,k_1\phi(e_1) + E - L\,\dot i_L^d}{v_o - E}\right)
+$$
+
+where $\sigma(\cdot)$ is a hard lower limit at 0 and a smooth (`tanh`) upper limit below $M$. All parameters are **nominal** values; see Section 3 of the paper for the general class and the design conditions.
+
+---
+
+## Repository structure
+
+> ⚠️ Adjust names to match the actual folders.
+
+```
+.
+├── Simulations/                    # Averaged-model simulations (Section 4)
+│   ├── SITLparameters.m
+│   └── Robustcontrolsimulation.slx
+├── SIL/                            # Software-in-the-loop, PSpice + Simulink (Section 5)
+├── DSP/                            # Hardware implementation (Section 6)
+│   ├── DSPbbparameters_ROB.m
+│   └── read_ADC_scribe_PWM_ROB_1ver.slx
+├── Hardware/                       # Schematics and prototype design files
+└── README.md
+```
+
+---
+
+## Requirements
+
+- MATLAB / Simulink (tested with R20XX — *fill in*)
+- **Embedded Coder** and **C2000 Microcontroller Blockset** / TI C2000 support package (hardware only)
+- PSpice / Simulink co-simulation (SIL only)
+- Texas Instruments Code Composer Studio (optional, for debugging)
+
+---
+
+## Quick start
+
+### 1. Clone
+
+```bash
+git clone https://github.com/Rodolfo9706/Robust-Control-for-DC-DC-converters.git
+cd Robust-Control-for-DC-DC-converters
+```
+
+### 2. Run the simulations
+
+```matlab
+cd Simulations
+run('SITLparameters.m')                 % load plant parameters and gains
+open('Robustcontrolsimulation.slx')     % then press Run
+```
+
+Results appear in the scopes of the model.
+
+### 3. Run on the C2000 LaunchPad
+
+1. Load the parameters:
    ```matlab
+   cd DSP
    run('DSPbbparameters_ROB.m')
    ```
-### **. Open the Simulink Model**
+2. Open the model:
+   ```matlab
+   open('read_ADC_scribe_PWM_ROB_1ver.slx')
+   ```
+3. **Configure the target:** *Hardware Settings → Hardware Implementation →* Texas Instruments C2000, **F28379D**. Check the COM port.
+4. **Build & deploy:** connect the LaunchPad via USB and click **Build, Deploy & Start**.
+5. **Monitor** ADC readings and PWM output (oscilloscope or external mode). To try other gains, edit `DSPbbparameters_ROB.m` and redeploy.
 
-Navigate to the folder where the DSP implementation files are located.
-
-Open the Simulink model read_ADC_scribe_PWM_ROB_1ver.slx by typing the following command in the MATLAB Command Window:
-```matlab
-open('read_ADC_scribe_PWM_ROB_1ver.slx')
-```
-### **.  Configure the Target Hardware**
-Before running the model, ensure that the target hardware is properly configured:
-
-- Connect the C2000 Launchpad DSP to your computer via USB.
-- In Simulink, go to "Simulink Toolstrip" → "Hardware Settings".
-- Under "Hardware Implementation", select the target hardware as Texas Instruments C2000 (e.g., F28379D).
-- Ensure the communication interface (e.g., COM port) is correctly set up for the DSP.
-
-### **. Build and Deploy the Model**
-
-- Click on the "Build" button in the Simulink toolstrip to compile and upload the code to the DSP.
-- Ensure the code is successfully loaded onto the hardware.
-
-5. Run the System
-- Once the code is deployed, the DSP will execute the control algorithm in real-time.
-- You can monitor the system's behavior using the connected peripherals (e.g., ADC readings or PWM outputs).
-
-7. Analyze and Debug
-Use tools like Code Composer Studio (if needed) to debug or monitor the DSP's operation.
-Adjust parameters in DSPbbparameters_ROB.m as necessary and re-deploy the model to test different scenarios.
-Prerequisites
-
-
-### **. Prerequisites**
-To execute the code on the C2000 Launchpad DSP, ensure you have the following:
-
-- MATLAB/Simulink with the Embedded Coder and C2000 support packages installed.
-- Texas Instruments Code Composer Studio (optional, for advanced debugging).
-- Proper hardware setup, including power supply, connections, and any necessary sensors or actuators.
-
- ### 3.**Running the Simulations**
-
-To run the simulations provided in the repository, follow these steps:
+> ⚠️ Power the converter only after the code is running, and start with low source voltage.
 
 ---
 
-### **. Load System Parameters**
+## Hardware setup
 
-- Open MATLAB and navigate to the folder where the repository is located.
-- Run the **`SITLparameters.m`** file to load the system parameters into the MATLAB workspace. This file initializes the required variables for the simulation.
+| Parameter | Value | Parameter | Value |
+|---|---|---|---|
+| Source $E$ | 5 V | Inductance $L$ | 2.1 mH |
+| Capacitance $C$ | 2200 µF | Load $R$ | 23 Ω |
+| PWM frequency | 25 kHz | Gate signal | 5 V |
+| Diode | NFN306 | MOSFET | IRL744N |
+| Current sensor | ACS712T | Controller | LaunchXL-F28379D |
 
-   ```matlab
-   run('SITLparameters.m')
+The MOSFET is driven through an optocoupler stage; output voltage is measured with a differential op-amp circuit. The control law runs at 25 kHz, synchronized with the PWM.
 
-   2. Open the Simulink Model
-   
-After the parameters are loaded, navigate to the Simulations/ folder.
+### Gains used
 
-Open the Simulink model simulacionrobusto.slx by typing the following command in the MATLAB Command Window:
- ```
-matlab
-open('Robustcontrolsimulation.slx')
- ```
-3. Run the Simulation
-Once the model is open, click the "Run" button at the top of the Simulink interface to start the simulation.
-Observe the results in the provided scopes or output blocks included in the model.
+| Study | $k_1$ | $k_2$ | $\epsilon$ | $\tau$ | $\ell$ | $M$ |
+|---|---|---|---|---|---|---|
+| Simulation | 300 | 120 | 9 | 0.1 ms | 0.95 | 0.98 |
+| SIL | 130 | 35 | 0.25 | 0.5 ms | 0.95 | 0.98 |
+| Hardware | 1120 | 80 | 2.25 | 0.1 ms | 0.95 | 0.98 |
 
-## Contributors  
-- [@gfloresc](https://github.com/gfloresc)
-- [@Rodolfo9706](https://github.com/Rodolfo9706)
+**Tuning tip:** start from Remark 1 of the paper — choose $k_1 \ge \sqrt{2\delta / t_1^\star}$ for a desired current-loop settling time $t_1^\star$, then keep $k_2/\sqrt{\epsilon}$ below the small-gain bound. Refine in SIL before moving to hardware.
+
+---
+
+## Citation
+
+If you use this code, please cite:
+
+```bibtex
+@inproceedings{verdin2025robust,
+  author    = {Verd{\'i}n, Rodolfo and Flores, Gerardo},
+  title     = {Robust control of an inverting buck-boost converter under exogenous disturbances},
+  booktitle = {2025 American Control Conference (ACC)},
+  pages     = {5034--5039},
+  year      = {2025},
+  doi       = {10.23919/ACC63710.2025.11107449}
+}
+```
+
+The journal version will be added once published.
+
+---
+
+## Authors
+
+- **Rodolfo Verdín** — Laboratorio de Percepción y Robótica (LAPyR), Centro de Investigaciones en Óptica (CIO), México · [@Rodolfo9706](https://github.com/Rodolfo9706)
+- **Gerardo Flores** — RAPTOR Lab, Texas A&M International University · [@gfloresc](https://github.com/gfloresc)
 
 <p align="center">
-  <a href="https://github.com/Rodolfo9796/Buck-boost-controllers/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=Rodolfo9706/Buck-boost-controllers" />
+  <a href="https://github.com/Rodolfo9706/Robust-Control-for-DC-DC-converters/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=Rodolfo9706/Robust-Control-for-DC-DC-converters" />
   </a>
 </p>
+
+## License
+
+*Add a license (e.g., MIT) so others can reuse the code.*
