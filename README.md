@@ -163,19 +163,6 @@ If you use this code, please cite the journal paper:
 }
 ```
 
-A preliminary version of this work appeared at ACC 2025:
-
-```bibtex
-@inproceedings{verdin2025robust,
-  author    = {Verd{\'i}n, Rodolfo and Flores, Gerardo},
-  title     = {Robust control of an inverting buck-boost converter under exogenous disturbances},
-  booktitle = {2025 American Control Conference (ACC)},
-  pages     = {5034--5039},
-  year      = {2025},
-  doi       = {10.23919/ACC63710.2025.11107449}
-}
-```
-
 ---
 
 ## Authors
