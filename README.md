@@ -1,9 +1,10 @@
-# Robust Nonlinear Control for Bilinear DC–DC Converters
+# Robust Nonlinear Control for a General Class of Bilinear DC–DC Converters: Design, Stability, and Experimental Validation
 
-Simulation, software-in-the-loop (SIL), and hardware files for a robust nonlinear voltage regulator for a class of bilinear second-order DC–DC converters, validated on an **inverting buck–boost converter** running on a **TI LaunchXL-F28379D** (C2000) DSP.
+Official code for the paper accepted in *Control Engineering Practice*. Simulation, software-in-the-loop (SIL), and hardware files for a robust nonlinear voltage regulator for a class of bilinear second-order DC–DC converters, validated on an **inverting buck–boost converter** running on a **TI LaunchXL-F28379D** (C2000) DSP.
 
-> **Paper:** R. Verdín and G. Flores, *"Robust Nonlinear Control for a General Class of Bilinear DC–DC Converters: Design, Stability, and Experimental Validation,"* submitted to *Control Engineering Practice*.
-> A preliminary version appeared at the **2025 American Control Conference (ACC)** — see [Citation](#citation).
+> **Paper:** R. Verdín and G. Flores, *"Robust Nonlinear Control for a General Class of Bilinear DC–DC Converters: Design, Stability, and Experimental Validation,"* *Control Engineering Practice*, 2026 (accepted).
+>
+> **Preliminary version:** R. Verdín and G. Flores, *"Robust control of an inverting buck-boost converter under exogenous disturbances,"* 2025 American Control Conference (ACC). See [Citation](#citation).
 
 ![Inverting buck–boost converter and control architecture](https://github.com/user-attachments/assets/ac972548-d740-4d3e-804b-bcf11292a359)
 
@@ -151,7 +152,19 @@ The MOSFET is driven through an optocoupler stage; output voltage is measured wi
 
 ## Citation
 
-If you use this code, please cite:
+If you use this code, please cite the journal paper:
+
+```bibtex
+@article{verdin2026robust,
+  author  = {Verd{\'i}n, Rodolfo and Flores, Gerardo},
+  title   = {Robust Nonlinear Control for a General Class of Bilinear {DC--DC} Converters: Design, Stability, and Experimental Validation},
+  journal = {Control Engineering Practice},
+  year    = {2026},
+  note    = {Accepted for publication}
+}
+```
+
+A preliminary version of this work appeared at ACC 2025:
 
 ```bibtex
 @inproceedings{verdin2025robust,
@@ -163,8 +176,6 @@ If you use this code, please cite:
   doi       = {10.23919/ACC63710.2025.11107449}
 }
 ```
-
-The journal version will be added once published.
 
 ---
 
