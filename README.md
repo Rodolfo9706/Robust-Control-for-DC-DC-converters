@@ -3,8 +3,7 @@
 Official code for the paper accepted in *Control Engineering Practice*. Simulation, software-in-the-loop (SIL), and hardware files for a robust nonlinear voltage regulator for a class of bilinear second-order DC–DC converters, validated on an **inverting buck–boost converter** running on a **TI LaunchXL-F28379D** (C2000) DSP.
 
 > **Paper:** R. Verdín and G. Flores, *"Robust Nonlinear Control for a General Class of Bilinear DC–DC Converters: Design, Stability, and Experimental Validation,"* *Control Engineering Practice*, 2026 (accepted).
->
-> **Preliminary version:** R. Verdín and G. Flores, *"Robust control of an inverting buck-boost converter under exogenous disturbances,"* 2025 American Control Conference (ACC). See [Citation](#citation).
+
 
 ![Inverting buck–boost converter and control architecture](https://github.com/user-attachments/assets/ac972548-d740-4d3e-804b-bcf11292a359)
 
